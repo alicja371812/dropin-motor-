@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/trigger", "destination": "/api/trigger.js" }
+  ],
+  "outputDirectory": "public"
+}

@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Dropin — Motor Control</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --blue: #2563EB;
+    --blue-light: #EFF6FF;
+    --bg: #F5F7FA;
+    --white: #ffffff;
+    --text: #111827;
+    --muted: #6B7280;
+    --border: #E5E7EB;
+    --success: #16A34A;
+    --success-bg: #F0FDF4;
+    --danger: #DC2626;
+    --danger-bg: #FEF2F2;
+    --warning: #D97706;
+    --warning-bg: #FFFBEB;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    max-width: 430px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Top bar */
+  .topbar {
+    background: var(--white);
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+  .topbar-logo { font-size: 17px; font-weight: 800; letter-spacing: 0.06em; }
+  .topbar-icon {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; color: var(--muted);
+    background: var(--white);
+  }
+
+  /* Body */
+  .body {
+    flex: 1;
+    padding: 28px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .page-title { font-size: 24px; font-weight: 800; line-height: 1.2; }
+  .page-sub   { font-size: 14px; color: var(--muted); margin-top: 4px; }
+
+  /* Channel info card */
+  .info-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .info-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+  }
+  .info-label { color: var(--muted); font-weight: 500; }
+  .info-value { font-weight: 700; color: var(--text); font-family: monospace; font-size: 12px; }
+  .info-value.blue { color: var(--blue); }
+
+  /* Status indicator */
+  .channel-status {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 600;
+  }
+  .status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--muted);
+  }
+  .status-dot.ready { background: var(--success); box-shadow: 0 0 0 3px rgba(22,163,74,0.15); }
+  .status-dot.firing { background: var(--blue); box-shadow: 0 0 0 3px rgba(37,99,235,0.15); animation: blink 0.5s infinite; }
+  .status-dot.error { background: var(--danger); box-shadow: 0 0 0 3px rgba(220,38,38,0.15); }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+  /* Motor buttons */
+  .motors { display: flex; flex-direction: column; gap: 12px; }
+
+  .motor-btn {
+    width: 100%;
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    padding: 20px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: 'Inter', sans-serif;
+    text-align: left;
+  }
+  .motor-btn:hover { border-color: var(--blue); background: var(--blue-light); }
+  .motor-btn:active { transform: scale(0.98); }
+  .motor-btn.firing {
+    border-color: var(--blue);
+    background: var(--blue-light);
+    animation: fire-pulse 0.4s ease;
+  }
+  .motor-btn.success { border-color: var(--success); background: var(--success-bg); }
+  .motor-btn.error   { border-color: var(--danger);  background: var(--danger-bg); }
+
+  @keyframes fire-pulse {
+    0%   { box-shadow: 0 0 0 0 rgba(37,99,235,0.4); }
+    50%  { box-shadow: 0 0 0 12px rgba(37,99,235,0); }
+    100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+  }
+
+  .motor-btn-left { display: flex; flex-direction: column; gap: 4px; }
+  .motor-btn-name { font-size: 16px; font-weight: 700; color: var(--text); }
+  .motor-btn-sub  { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .motor-btn-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: var(--blue-light);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .motor-btn:hover .motor-btn-icon { background: var(--blue); }
+  .motor-btn.success .motor-btn-icon { background: var(--success-bg); }
+  .motor-btn.error   .motor-btn-icon { background: var(--danger-bg); }
+
+  /* Log */
+  .log-card {
+    background: var(--white);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .log-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .log-clear {
+    font-size: 11px;
+    color: var(--blue);
+    cursor: pointer;
+    font-weight: 600;
+    background: none;
+    border: none;
+    font-family: 'Inter', sans-serif;
+  }
+  .log-body {
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    max-height: 160px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 11px;
+  }
+  .log-body::-webkit-scrollbar { width: 3px; }
+  .log-body::-webkit-scrollbar-thumb { background: var(--border); }
+  .log-entry { display: flex; gap: 8px; }
+  .log-time  { color: var(--muted); flex-shrink: 0; }
+  .log-msg.ok   { color: var(--success); }
+  .log-msg.err  { color: var(--danger); }
+  .log-msg.info { color: var(--blue); }
+  .log-empty { color: var(--muted); font-style: italic; padding: 4px 0; }
+
+  /* ESP32 code hint */
+  .code-card {
+    background: #0f1117;
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .code-header {
+    padding: 10px 14px;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #6b7280;
+    border-bottom: 1px solid #2a2d36;
+  }
+  .code-body {
+    padding: 14px;
+    font-family: monospace;
+    font-size: 11px;
+    color: #9ca3af;
+    line-height: 1.8;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  .code-body .kw  { color: #60a5fa; }
+  .code-body .str { color: #34d399; }
+  .code-body .cm  { color: #4b5563; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-icon">☰</div>
+  <div class="topbar-logo">DROPIN</div>
+  <div class="topbar-icon">↺</div>
+</div>
+
+<div class="body">
+
+  <div>
+    <div class="page-title">Motor Control</div>
+    <div class="page-sub">Send trigger to your ESP32 via OOCSI</div>
+  </div>
+
+  <!-- Channel info -->
+  <div class="info-card">
+    <div class="info-row">
+      <span class="info-label">OOCSI Server</span>
+      <span class="info-value">oocsi.id.tue.nl</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Channel</span>
+      <span class="info-value blue">Dropin_Motor</span>
+    </div>
+    <div class="info-row">
+      <span class="info-label">Status</span>
+      <div class="channel-status">
+        <div class="status-dot ready" id="statusDot"></div>
+        <span id="statusText">Ready</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Motor buttons -->
+  <div class="motors">
+
+    <button class="motor-btn" id="btn-open" onclick="triggerMotor(0, 1, 'btn-open', 'Opening...')">
+      <div class="motor-btn-left">
+        <div class="motor-btn-name">Open Compartment</div>
+        <div class="motor-btn-sub">Sends motor: 0 · value: 1</div>
+      </div>
+      <div class="motor-btn-icon">🔓</div>
+    </button>
+
+    <button class="motor-btn" id="btn-close" onclick="triggerMotor(0, 0, 'btn-close', 'Closing...')">
+      <div class="motor-btn-left">
+        <div class="motor-btn-name">Close Compartment</div>
+        <div class="motor-btn-sub">Sends motor: 0 · value: 0</div>
+      </div>
+      <div class="motor-btn-icon">🔒</div>
+    </button>
+
+  </div>
+
+  <!-- Log -->
+  <div class="log-card">
+    <div class="log-header">
+      Activity Log
+      <button class="log-clear" onclick="clearLog()">Clear</button>
+    </div>
+    <div class="log-body" id="logBody">
+      <div class="log-empty">No activity yet — press a button above</div>
+    </div>
+  </div>
+
+  <!-- ESP32 code hint -->
+  <div class="code-card">
+    <div class="code-header">ESP32 — Subscribe to Dropin_Motor</div>
+    <div class="code-body"><span class="cm">// Add this to your ESP32 Arduino code</span>
+<span class="kw">void</span> setup() {
+  oocsi.connect(<span class="str">"Dropin_Alicja_ESP32_Test"</span>,
+                <span class="str">"oocsi.id.tue.nl"</span>, processOOCSI);
+  oocsi.subscribe(<span class="str">"Dropin_Motor"</span>);
+}
+
+<span class="kw">void</span> processOOCSI() {
+  <span class="kw">int</span> motor = oocsi.getInt(<span class="str">"motor"</span>, -1);
+  <span class="kw">int</span> value = oocsi.getInt(<span class="str">"value"</span>, 0);
+  <span class="cm">// drive your motor here</span>
+}</div>
+  </div>
+
+</div>
+
+<script>
+  async function triggerMotor(motor, value, btnId, label) {
+    const btn = document.getElementById(btnId);
+    const dot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+
+    // Visual feedback
+    btn.classList.add('firing');
+    dot.className = 'status-dot firing';
+    statusText.textContent = label;
+
+    addLog('info', `→ Sending motor:${motor} value:${value} to Dropin_Motor`);
+
+    try {
+      const res = await fetch('/api/trigger', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ motor, value })
+      });
+
+      const data = await res.json();
+
+      if (data.ok) {
+        btn.classList.remove('firing');
+        btn.classList.add('success');
+        dot.className = 'status-dot ready';
+        statusText.textContent = 'Ready';
+        addLog('ok', `✓ Triggered — motor:${motor} value:${value}`);
+        setTimeout(() => btn.classList.remove('success'), 2000);
+      } else {
+        throw new Error(data.error || 'Unknown error');
+      }
+
+    } catch (err) {
+      btn.classList.remove('firing');
+      btn.classList.add('error');
+      dot.className = 'status-dot error';
+      statusText.textContent = 'Error';
+      addLog('err', `✗ ${err.message}`);
+      setTimeout(() => {
+        btn.classList.remove('error');
+        dot.className = 'status-dot ready';
+        statusText.textContent = 'Ready';
+      }, 3000);
+    }
+  }
+
+  function addLog(type, msg) {
+    const body = document.getElementById('logBody');
+    const empty = body.querySelector('.log-empty');
+    if (empty) empty.remove();
+
+    const now = new Date();
+    const t = [now.getHours(), now.getMinutes(), now.getSeconds()]
+      .map(n => String(n).padStart(2, '0')).join(':');
+
+    const entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.innerHTML = `<span class="log-time">${t}</span><span class="log-msg ${type}">${msg}</span>`;
+    body.appendChild(entry);
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function clearLog() {
+    document.getElementById('logBody').innerHTML = '<div class="log-empty">No activity yet — press a button above</div>';
+  }
+</script>
+</body>
+</html>
