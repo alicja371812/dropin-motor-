@@ -10,22 +10,23 @@ export default async function handler(req, res) {
   const { motor, value } = req.body || {};
 
   try {
-    // OOCSI REST API expects form-encoded POST data
-    const formData = new URLSearchParams();
-    formData.append('sender', 'dropin-app');
-    formData.append('motor', motor ?? 0);
-    formData.append('value', value ?? 1);
-
+    // OOCSI HTTP API: POST JSON to /send/channelname
     const response = await fetch('http://oocsi.id.tue.nl/send/Dropin_Motor', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: formData.toString()
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        sender: 'dropin-app',
+        motor:  motor ?? 0,
+        value:  value ?? 1
+      })
     });
 
     const text = await response.text();
+    console.log('OOCSI response:', response.status, text);
     return res.status(200).json({ ok: true, oocsiStatus: response.status, response: text });
 
   } catch (err) {
+    console.error('OOCSI error:', err.message);
     return res.status(500).json({ ok: false, error: err.message });
   }
 }
