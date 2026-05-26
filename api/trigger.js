@@ -10,12 +10,22 @@ export default async function handler(req, res) {
   const { motor, value } = req.body || {};
 
   try {
-    // OOCSI GET format: /send/channel/param?key=value&key=value
-    const url = `https://oocsi.id.tue.nl/send/Dropin_Motor/trigger?motor=${motor ?? 0}&value=${value ?? 1}&sender=dropin-app`;
+    // OOCSI requires a named client to send — connect as a virtual client first
+    // then send JSON to the channel via the sendjson command over HTTP
+    const response = await fetch('https://oocsi.id.tue.nl/send/Dropin_Motor', {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify({
+        motor: parseInt(motor ?? 0),
+        value: parseInt(value ?? 1),
+        sender: 'dropin-app'
+      })
+    });
 
-    const response = await fetch(url, { method: 'GET' });
     const text = await response.text();
-
     console.log('OOCSI response:', response.status, text);
     return res.status(200).json({ ok: true, oocsiStatus: response.status, response: text });
 
