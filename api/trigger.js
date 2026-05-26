@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   try {
     // OOCSI HTTP API: POST JSON to /send/channelname
-    const response = await fetch('http://oocsi.id.tue.nl/send/Dropin_Motor', {
+    const response = await fetch('https://oocsi.id.tue.nl/send/Dropin_Motor', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
