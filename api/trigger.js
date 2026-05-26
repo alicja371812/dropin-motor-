@@ -9,17 +9,17 @@ export default async function handler(req, res) {
 
   const { motor, value } = req.body || {};
 
-  const payload = {
-    sender: 'dropin-app',
-    motor:  motor ?? 0,
-    value:  value ?? 1
-  };
-
   try {
+    // OOCSI REST API expects form-encoded POST data
+    const formData = new URLSearchParams();
+    formData.append('sender', 'dropin-app');
+    formData.append('motor', motor ?? 0);
+    formData.append('value', value ?? 1);
+
     const response = await fetch('http://oocsi.id.tue.nl/send/Dropin_Motor', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: formData.toString()
     });
 
     const text = await response.text();
