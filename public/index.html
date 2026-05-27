@@ -269,18 +269,18 @@
   <!-- Motor buttons -->
   <div class="motors">
 
-    <button class="motor-btn" id="btn-open" onclick="triggerMotor(0, 0, 'btn-open', 'Opening...')">
+    <button class="motor-btn" id="btn-close" onclick="triggerMotor(0, 1, 'btn-close', 'Closing...')">
       <div class="motor-btn-left">
         <div class="motor-btn-name">Open Compartment</div>
-        <div class="motor-btn-sub">Sends motor: 0 · value: 0</div>
+        <div class="motor-btn-sub">Sends motor: 0 · value: 1</div>
       </div>
       <div class="motor-btn-icon">🔓</div>
     </button>
-
-    <button class="motor-btn" id="btn-close" onclick="triggerMotor(0, 1, 'btn-close', 'Closing...')">
+    
+    <button class="motor-btn" id="btn-open" onclick="triggerMotor(0, 0, 'btn-open', 'Opening...')">
       <div class="motor-btn-left">
         <div class="motor-btn-name">Close Compartment</div>
-        <div class="motor-btn-sub">Sends motor: 0 · value: 1</div>
+        <div class="motor-btn-sub">Sends motor: 0 · value: 0</div>
       </div>
       <div class="motor-btn-icon">🔒</div>
     </button>
